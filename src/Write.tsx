@@ -1,17 +1,25 @@
-import { Component, ReactNode } from "react";
+import { Component } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Axios from "axios";
 
+interface IProps {
+  isModifyMode: boolean;
+  boardId: number;
+  handleCancel: any;
+}
 
 
 /**
  * Write class
+ * @param {SS} e
  */
-
-class Write extends Component {
+class Write extends Component<IProps> {
   /**
    * @return {Component} Component
+   */
+  /**
+   * @param {SS} props
    */
 
   state = {
@@ -19,6 +27,14 @@ class Write extends Component {
     title: "",
     content: "",
   };
+  constructor(props: any) {
+    super(props);
+    this.state = {
+      title: "",
+      content: "",
+      isModifyMode: false,
+    };
+  }
 
   write = () => {
     Axios.post("http://localhost:3000/insert", {
@@ -26,10 +42,14 @@ class Write extends Component {
       content: this.state.content,
     })
       .then((res) => {
-        console.log(res);
+        this.setState({
+          title: "",
+          content: "",
+        });
+        this.props.handleCancel();
       })
       .catch((e) => {
-        console.log(e);
+        console.error(e);
       });
   };
 
@@ -37,9 +57,31 @@ class Write extends Component {
     Axios.post("http://localhost:3000/update", {
       title: this.state.title,
       content: this.state.content,
+      id: this.props.boardId,
     })
       .then((res) => {
-        console.log(res);
+        this.setState({
+          title: "",
+          content: "",
+        });
+        this.props.handleCancel();
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
+
+  detail = () => {
+    Axios.post("http://localhost:3000/detail", {
+      id: this.props.boardId,
+    })
+      .then((res) => {
+        if (res.data.length > 0) {
+          this.setState({
+            title: res.data[0].BOARD_TITLE,
+            content: res.data[0].BOARD_CONTENT,
+          });
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -52,7 +94,19 @@ class Write extends Component {
       [e.target.name]: e.target.value,
     });
   };
+  /**
+   *
+   * @param {any} prevProps
+   */
+  componentDidUpdate = (prevProps: any) => {
+    if (this.props.isModifyMode && this.props.boardId !== prevProps.boardId) {
+      this.detail();
+    }
+  };
 
+  /**
+   * @return {Component} Component
+   */
   render() {
     return (
       <div>
@@ -82,7 +136,9 @@ class Write extends Component {
         >
           작성완료
         </Button>
-        <Button variant="secondary">취소</Button>
+        <Button variant="secondary" onClick={this.props.handleCancel}>
+          취소
+        </Button>
       </div>
     );
   }
