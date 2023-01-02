@@ -37,14 +37,32 @@ const Board = ({
     </tr>
   );
 };
+interface IProps {
+  isComplete: boolean;
+  handleModify: any;
+  renderComplete: any;
+  isModifyMode: boolean;
+}
 
 /**
  * BoardList class
+ * @param {SS} e
  */
-class BoardList extends Component {
+class BoardList extends Component<IProps> {
+  /**
+   * @param {SS} props
+   */
+  constructor(props: any) {
+    super(props);
+    this.setState({
+      isModifyMode: props.isModifyMode,
+    });
+  }
+
   state = {
     boardList: [],
     checkList: [],
+    isModifyMode: false,
   };
 
   getList = () => {
@@ -54,15 +72,22 @@ class BoardList extends Component {
         this.setState({
           boardList: data,
         });
+        this.props.renderComplete();
       })
       .catch((e) => {
         console.error(e);
       });
   };
 
-  onCheckboxChange = (e: any) => {
-    const list: Array<string> = this.state.checkList;
-    list.push(e.target.value);
+  onCheckboxChange = (checked: boolean, id: any) => {
+    const list: Array<string> = this.state.checkList.filter((v) => {
+      return v !== id;
+    });
+
+    if (checked) {
+      list.push(id);
+    }
+
     this.setState({
       checkList: list,
     });
@@ -74,11 +99,39 @@ class BoardList extends Component {
     this.getList();
   }
 
+  handleDelete = () => {
+    if (this.state.checkList.length === 0) {
+      alert("삭제할 게시글을 선택하세요.");
+      return;
+    }
+
+    let boardIdList = "";
+
+    this.state.checkList.forEach((v: any) => {
+      boardIdList += `'${v}',`;
+    });
+
+    Axios.post("http://localhost:3000/delete", {
+      boardIdList: boardIdList.substring(0, boardIdList.length - 1),
+    })
+      .then(() => {
+        this.getList();
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
+
+  componentDidUpdate() {
+    if (!this.props.isComplete) {
+      this.getList();
+    }
+  }
+
   /**
    * @return {Component} Component
    */
   render() {
-    // eslint-disable-next-line
     const { boardList }: { boardList: any } = this.state;
 
     return (
@@ -94,26 +147,32 @@ class BoardList extends Component {
             </tr>
           </thead>
           <tbody>
-            {
-              // eslint-disable-next-line
-              boardList.map((v: any) => {
-                return (
-                  <Board
-                    id={v.BOARD_ID}
-                    title={v.BOARD_TITLE}
-                    registerId={v.REGISTER_ID}
-                    registerDate={v.REGISTER_DATE}
-                    key={v.BOARD_ID}
-                    props={this}
-                  />
-                );
-              })
-            }
+            {boardList.map((v: any) => {
+              return (
+                <Board
+                  id={v.BOARD_ID}
+                  title={v.BOARD_TITLE}
+                  registerId={v.REGISTER_ID}
+                  registerDate={v.REGISTER_DATE}
+                  key={v.BOARD_ID}
+                  props={this}
+                />
+              );
+            })}
           </tbody>
         </Table>
         <Button variant="info">글쓰기</Button>
-        <Button variant="secondary">수정하기</Button>
-        <Button variant="danger">삭제하기</Button>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            this.props.handleModify(this.state.checkList);
+          }}
+        >
+          수정하기
+        </Button>
+        <Button variant="danger" onClick={this.handleDelete}>
+          삭제하기
+        </Button>
       </div>
     );
   }
