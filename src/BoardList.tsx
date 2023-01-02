@@ -1,23 +1,34 @@
 import { Component } from "react";
 import Axios from "axios";
 import Table from "react-bootstrap/Table";
-import Button from "react-bootstrap/Button";
+import Button from "react-bootstrap/Button"; 
 
 const Board = ({
   id,
   title,
   registerId,
   registerDate,
+  props,
 }: {
   id: number;
   title: string;
   registerId: string;
   registerDate: string;
+  props: any;
 }) => {
   return (
     <tr>
       <td>
-        <input type="checkbox"></input>
+        <input
+          type="checkbox"
+          value={id}
+          onChange={(e) => {
+            props.onCheckboxChange(
+              e.currentTarget.checked,
+              e.currentTarget.value
+            );
+          }}
+        ></input>
       </td>
       <td>{id}</td>
       <td>{title}</td>
@@ -33,6 +44,7 @@ const Board = ({
 class BoardList extends Component {
   state = {
     boardList: [],
+    checkList: [],
   };
 
   getList = () => {
@@ -46,6 +58,14 @@ class BoardList extends Component {
       .catch((e) => {
         console.error(e);
       });
+  };
+
+  onCheckboxChange = (e: any) => {
+    const list: Array<string> = this.state.checkList;
+    list.push(e.target.value);
+    this.setState({
+      checkList: list,
+    });
   };
 
   /**
@@ -83,6 +103,8 @@ class BoardList extends Component {
                     title={v.BOARD_TITLE}
                     registerId={v.REGISTER_ID}
                     registerDate={v.REGISTER_DATE}
+                    key={v.BOARD_ID}
+                    props={this}
                   />
                 );
               })
