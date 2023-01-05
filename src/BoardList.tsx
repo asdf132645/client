@@ -108,7 +108,7 @@ class BoardList extends Component<IProps> {
     let boardIdList = "";
 
     this.state.checkList.forEach((v: any) => {
-      boardIdList += `'${v}',`;
+      boardIdList += `${v},`;
     });
 
     Axios.post("http://localhost:3000/delete", {
