@@ -23,7 +23,7 @@ class App extends Component {
    * @param {any} checkList
    */
 
-  handleModify = (checkList: any) => {
+  handleModify = (checkList: any) => { 
     console.log(checkList); 
     if (checkList.length === 0) {
       alert("수정할 게시글을 선택하세요.");
