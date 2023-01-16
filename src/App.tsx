@@ -17,7 +17,7 @@ class App extends Component {
     isModifyMode: false,
     isComplete: true,
     boardId: 0,
-  };
+  }; 
 
   /**
    * @param {any} checkList
